@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <title>BlogSite</title>
+    <style>
+        body {
+            text-rendering: optimizeLegibility;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+            font-family: Roboto, sans-serif;
+            position: relative;
+            overflow-y: auto;
+            padding-top: 60px; /
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #f4f4f9;
+            color: #000000;
+            text-align: left;
+            padding: 10px 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 1000px;
+            padding: 20px;
+        }
+
+        .input-container {
+            width: 100%;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            background-color: #fff;
+        }
+
+        input[type="text"],
+        textarea {
+            padding: 10px 10px 10px 0;
+            width: 100%;
+            border: none;
+            font-size: 18px;
+            box-sizing: border-box;
+            font-family: 'Roboto', Arial, sans-serif;
+            resize: none;
+            outline: none;
+        }
+
+        input[type="text"] {
+            height: 40px;
+            font-size: 24px;
+        }
+
+        textarea {
+            height: 600px;
+        }
+
+        button {
+            font-family: 'Roboto', Arial, sans-serif;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .upload-button {
+            background-color: #007bff;
+        }
+
+        .upload-button:hover {
+            background-color: #0056b3;
+        }
+
+        .remove-button {
+            background-color: #dc3545;
+        }
+
+        .remove-button:hover {
+            background-color: #c82333;
+        }
+
+
+        .hidden-input {
+            display: none;
+        }
+        .image-preview {
+            margin: 10px 0;
+            width: 400px;
+            height: auto;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            overflow: hidden;
+            background-color: #f4f4f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body>
+<header>
+    <h1>BlogSite</h1>
+    <button class="redirect-button" onclick="redirectToHomePage()">Cancel</button>
+</header>
+
+
+<form id="addPost" action="/addPost" method="POST">
+    <div class="input-container">
+        <input type="text" id="title" name="postTitle" placeholder="Title" required>
+        <img id="imagePreview" class="image-preview" alt="Image preview" style="display: none;">
+        <textarea name="postDescription" placeholder="Some text"  required></textarea>
+    </div>
+    <div class="button-container">
+        <button id="uploadButton" class="upload-button" type="button" onclick="handleImageUpload()">
+            Upload Photo
+        </button>
+        <button class="redirect-button" type="submit">Send</button>
+    </div>
+    <input type="file" id="fileInput" class="hidden-input" accept="image/*" onchange="previewImage(event)">
+</form>
+
+<script>
+    function redirectToHomePage() {
+        window.location.href = '/';
+    }
+
+    function previewImage(event) {
+        const file = event.target.files[0];
+        const imagePreview = document.getElementById('imagePreview');
+        const uploadButton = document.getElementById('uploadButton');
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                imagePreview.style.display = 'block';
+                uploadButton.textContent = 'Remove Photo';
+                uploadButton.classList.remove('upload-button');
+                uploadButton.classList.add('remove-button');
+                uploadButton.setAttribute('onclick', 'removeImage()');
+            }
+            reader.readAsDataURL(file);
+        } else {
+            imagePreview.style.display = 'none';
+            uploadButton.textContent = 'Upload Photo';
+            uploadButton.classList.remove('remove-button');
+            uploadButton.classList.add('upload-button');
+            uploadButton.setAttribute('onclick', 'handleImageUpload()');
+        }
+    }
+
+    function handleImageUpload() {
+        document.getElementById('fileInput').click();
+    }
+
+    function removeImage() {
+        const imagePreview = document.getElementById('imagePreview');
+        const uploadButton = document.getElementById('uploadButton');
+        imagePreview.src = '';
+        imagePreview.style.display = 'none';
+        document.getElementById('fileInput').value = '';
+        uploadButton.textContent = 'Upload Photo';
+        uploadButton.classList.remove('remove-button');
+        uploadButton.classList.add('upload-button');
+        uploadButton.setAttribute('onclick', 'handleImageUpload()');
+    }
+
+    document.getElementById('addPost').addEventListener('submit', function(event) {
+        event.preventDefault();
+        var formData = new FormData(this);
+        var fileInput = document.getElementById('fileInput');
+        if (fileInput.files.length > 0) {
+            formData.append('postImage', fileInput.files[0]);
+        }
+        fetch('/addPost', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/';
+                } else {
+                    alert('Ошибка при добавлении поста. Пожалуйста, попробуйте ещё раз.');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                alert('Ошибка при добавлении поста. Пожалуйста, попробуйте ещё раз.');
+            });
+    });
+</script>
+</body>
+</html>
